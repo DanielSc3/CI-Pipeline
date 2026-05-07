@@ -1,0 +1,14 @@
+import express from 'express';
+import healthRouter from './routes/health';
+import updatesRouter from './routes/updates';
+
+export function createApp() {
+  const app = express();
+
+  app.use(express.json());
+
+  app.use('/health', healthRouter);
+  app.use('/updates', updatesRouter);
+
+  return app;
+}
