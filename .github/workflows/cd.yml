@@ -1,0 +1,29 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'staging' }}
+
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+            -o /dev/null \
+            -w "HTTP status: %{http_code}\n"
