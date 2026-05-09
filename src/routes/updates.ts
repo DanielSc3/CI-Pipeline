@@ -17,6 +17,11 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 router.post('/', (req: Request, res: Response) => {
+  if (process.env.FEATURE_NEW_UPDATES !== 'true') {
+    res.status(503).json({ error: 'Publishing updates is currently disabled' });
+    return;
+  }
+
   const { title, message } = req.body as { title?: string; message?: string };
 
   if (!title || !message) {

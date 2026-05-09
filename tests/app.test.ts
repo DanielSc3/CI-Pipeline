@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app';
 
@@ -20,12 +20,13 @@ describe('GET /updates', () => {
   });
 });
 
-describe('POST /updates', () => {
-  beforeEach(async () => {
-    // seed one update before each test in this block
-    await request(app)
-      .post('/updates')
-      .send({ title: 'Setup', message: 'Initial entry' });
+describe('POST /updates — feature flag enabled', () => {
+  beforeEach(() => {
+    process.env.FEATURE_NEW_UPDATES = 'true';
+  });
+
+  afterEach(() => {
+    delete process.env.FEATURE_NEW_UPDATES;
   });
 
   it('creates a new update and returns 201', async () => {
@@ -65,5 +66,24 @@ describe('POST /updates', () => {
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ error: 'title and message are required' });
+  });
+});
+
+describe('POST /updates — feature flag disabled', () => {
+  beforeEach(() => {
+    process.env.FEATURE_NEW_UPDATES = 'false';
+  });
+
+  afterEach(() => {
+    delete process.env.FEATURE_NEW_UPDATES;
+  });
+
+  it('returns 503 when feature flag is off', async () => {
+    const res = await request(app)
+      .post('/updates')
+      .send({ title: 'Test', message: 'Should be blocked' });
+
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual({ error: 'Publishing updates is currently disabled' });
   });
 });
