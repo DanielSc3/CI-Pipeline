@@ -5,10 +5,13 @@ import { createApp } from '../src/app';
 const app = createApp();
 
 describe('GET /health', () => {
-  it('returns status ok', async () => {
+  it('returns status ok with uptime and environment', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok' });
+    expect(res.body.status).toBe('ok');
+    expect(typeof res.body.uptime).toBe('number');
+    expect(typeof res.body.environment).toBe('string');
+    expect(typeof res.body.version).toBe('string');
   });
 });
 
